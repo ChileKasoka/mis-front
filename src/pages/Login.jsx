@@ -14,12 +14,34 @@ function Login() {
     setErrors({ ...errors, [name]: '' });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateForm(formData);
     if (Object.keys(newErrors).length === 0) {
       // Form is valid, submit data or perform other actions
-      console.log('Form is valid:', formData);
+      try {
+        // Form is valid, send data to the server
+        const response = await fetch('http://localhost:8081/v1/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+  
+        if (response.ok) {
+          // If the response is successful (status code 200-299), handle success
+          console.log('Form submitted successfully');
+          const responseData = await response.json();
+          console.log(responseData);
+        } else {
+          // If the response has an error (status code outside of 200-299 range), handle error
+          console.error('Error submitting form:', response.statusText);
+        }
+      } catch (error) {
+        // Handle any network or server errors
+        console.error('Error submitting form:', error.message);
+      }
     } else {
       setErrors(newErrors);
     }
