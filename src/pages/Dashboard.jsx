@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 
 function Dashboard() {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const { id } = useParams(); // Extract id parameter from URL
 
   useEffect(() => {
@@ -19,6 +20,7 @@ function Dashboard() {
         }
         const responseData = await response.json();
         setName(responseData.name);
+        setEmail(responseData.email);
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -26,7 +28,15 @@ function Dashboard() {
   }, [id]); // Re-run effect when id changes
 
   return (
-    <div className='text-3xl'>Hi {name}</div>
+    <div className='flex bg-gray-400 text-center'>
+          <div className='text-3xl'>Hi {name} {email}</div>
+          <form onSubmit={''}>
+            <div>
+              <input type="file" name="file"/>
+              <input type="submit" value="Upload"/>
+            </div>
+          </form>
+    </div>
   );
 }
 

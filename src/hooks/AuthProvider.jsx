@@ -1,11 +1,12 @@
-import { useContext, createContext, useState } from "react";
+import { useContext, createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("site") || "");
+  const [token, setToken] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(null);
   const navigate = useNavigate();
   const loginAction = async (data, setErrors) => {
     const newErrors = validateForm(data);
@@ -25,21 +26,30 @@ const AuthProvider = ({ children }) => {
         if (response.ok) {
           // If the response is successful (status code 200-299), handle success
           console.log('Form submitted successfully');
-          const responseData = await response.json();
-          console.log(responseData);
-         // const { email, id, name, access_token} = responseData;
+          const { email, id, name, access_token, refresh_token} = await response.json();
+          console.log(refresh_token);
+          //const { email, id, name, access_token} = responseData;
           setUser({
-            email: responseData.email,
-            id: responseData.id,
-            name: responseData.name
+            email: email,
+            id: id,
+            name: name,
+            access_token: access_token,
+            refresh_token: refresh_token
           }, () => {
             console.log("User state after setting:", user);
           });
-          const token = setToken(responseData.access_token);
-          const userId = responseData.id
-          console.log(responseData.access_token);
-          localStorage.setItem("site", token);
-          navigate(`/dashboard/${userId}`);
+
+          const accessToken = access_token;
+          const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}` // Add this line
+          };
+
+          setToken(access_token);
+          const refreshToken = setRefreshToken(refresh_token)
+          console.log(refreshToken);
+          const userId = id
+          navigate(`/dashboard/${userId}`, {headers});
 ;
           return;
         } else {
@@ -70,6 +80,45 @@ const AuthProvider = ({ children }) => {
     return errors;
   };
 
+  const refreshTokenHandler = async (data) => {
+    try {
+      const response = await fetch('http://localhost:8081/v1/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        console.log(data)
+        const { token } = await response.json();
+        setUser({
+          access_token: token
+        }, () => {
+          console.log("User state after setting:", user);
+        });
+        setToken(token);
+      } else {
+        // Handle refresh token failure
+        console.error('Error refreshing token');
+        // Perform logout or other appropriate actions
+      }
+    } catch (error) {
+      console.error('Error refreshing token');
+      // Perform logout or other appropriate actions
+    }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshTokenHandler();
+    }, 1 * 60 * 1000); // Refresh every 5 minutes
+
+    return () => clearInterval(interval);
+  }, [token])
+
 
   const logOut = () => {
     setUser(null);
@@ -77,9 +126,10 @@ const AuthProvider = ({ children }) => {
     localStorage.removeItem("site");
     navigate("/login");
   };
+  
 
   return (
-    <AuthContext.Provider value={{ token, user, loginAction, logOut }}>
+    <AuthContext.Provider value={{ token, refreshToken, user, loginAction, refreshTokenHandler, logOut }}>
       {children}
     </AuthContext.Provider>
   );
