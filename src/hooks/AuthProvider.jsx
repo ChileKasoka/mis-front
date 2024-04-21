@@ -7,6 +7,7 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [refreshToken, setRefreshToken] = useState(null);
+  const [intervalId, setIntervalId] = useState(null);
   const navigate = useNavigate();
   const loginAction = async (data, setErrors) => {
     const newErrors = validateForm(data);
@@ -46,7 +47,7 @@ const AuthProvider = ({ children }) => {
           };
 
           setToken(access_token);
-          const refreshToken = setRefreshToken(refresh_token)
+          setRefreshToken(refresh_token)
           console.log(refreshToken);
           const userId = id
           navigate(`/dashboard/${userId}`, {headers});
@@ -112,19 +113,38 @@ const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      refreshTokenHandler();
-    }, 1 * 60 * 1000); // Refresh every 5 minutes
 
-    return () => clearInterval(interval);
+    if (token) {
+      const interval = setInterval(() => {
+        refreshTokenHandler();
+      }, 1 * 60 * 1000); // Refresh every 5 minutes
+  
+      setIntervalId(interval);
+  
+      return () => clearInterval(interval);
+    }
   }, [token]) //everytime a new token is generated
 
 
-  const logOut = () => {
-    setUser(null);
-    setToken(null);
-    // localStorage.removeItem("site");
-    navigate("/login");
+  
+  const logOut = async () => {
+    try {
+      const response = await fetch('http://localhost:8081/v1/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        setUser(null);
+        setToken(null);
+        clearInterval(intervalId);
+        navigate("/login");
+      } else {
+        console.error('Logout failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error during logout:', error.message);
+    }
   };
   
 

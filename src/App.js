@@ -14,6 +14,7 @@ function App() {
             <Route path="/dashboard/:id" element={<Dashboard />} />
           </Route>
           <Route path="login" element={ <Login/> } />
+          <Route path="logout" element={ <Login/> }/>
           <Route path="signup" element={ <Signup/> } />
         </Routes>
       </AuthProvider>
