@@ -9,10 +9,32 @@ const AuthProvider = ({ children }) => {
   const [refreshToken, setRefreshToken] = useState(null);
   const [intervalId, setIntervalId] = useState(null);
   const navigate = useNavigate();
-  const loginAction = async (data, setErrors) => {
-    const newErrors = validateForm(data);
-    if (Object.keys(newErrors).length === 0) {
-      // Form is valid, submit data or perform other actions
+
+  const signUpAction = async (data) => {
+    try {
+      const response = await fetch('http://localhost:8081/v1/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json', // Fixed typo in Content-Type
+        },
+        credentials: 'include',
+        body: JSON.stringify(data)
+      });
+  
+      if (response.ok) {
+        // If the response is successful, navigate to the login page
+        navigate("/login");
+      } else {
+        // If the response is not successful, throw an error
+        throw new Error('Failed to sign up: ' + response.statusText);
+      }
+    } catch (error) {
+      // Handle any errors that occur during the sign-up process
+      console.error('Error signing up new user:', error);
+    }
+  }
+  
+  const loginAction = async (data) => {
       try {
         // Form is valid, send data to the server
         const response = await fetch('http://localhost:8081/v1/login', {
@@ -61,24 +83,6 @@ const AuthProvider = ({ children }) => {
         // Handle any network or server errors
         console.error('Error submitting form:', error.message);
       }
-    } else {
-      setErrors(newErrors);
-    }
-  };
-
-  const validateForm = (data) => {
-    let errors = {};
-    if (!data.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(data.email)) {
-      errors.email = 'Email is invalid';
-    }
-    if (!data.password.trim()) {
-      errors.password = 'Password is required';
-    } else if (data.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters long';
-    }
-    return errors;
   };
 
   const refreshTokenHandler = async (data) => {
@@ -149,7 +153,7 @@ const AuthProvider = ({ children }) => {
   
 
   return (
-    <AuthContext.Provider value={{ token, refreshToken, user, setUser, setToken, loginAction, refreshTokenHandler, logOut }}>
+    <AuthContext.Provider value={{ token, refreshToken, user, setUser, setToken, signUpAction, loginAction, refreshTokenHandler, logOut }}>
       {children}
     </AuthContext.Provider>
   );

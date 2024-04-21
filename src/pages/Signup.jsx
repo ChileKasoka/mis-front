@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
+import { useAuth } from "../hooks/AuthProvider";
 
 function SignUp() {
   const [formData, setFormData] = useState({
-    username: '',
+    name: '',
     email: '',
     password: '',
   });
@@ -15,12 +16,13 @@ function SignUp() {
     setErrors({ ...errors, [name]: '' });
   };
 
+  const auth = useAuth();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const newErrors = validateForm(formData);
     if (Object.keys(newErrors).length === 0) {
-      // Form is valid, submit data or perform other actions
-      console.log('Form is valid:', formData);
+      auth.signUpAction(formData, setErrors);
     } else {
       setErrors(newErrors);
     }
@@ -28,8 +30,8 @@ function SignUp() {
 
   const validateForm = (data) => {
     let errors = {};
-    if (!data.username.trim()) {
-      errors.username = 'Username is required';
+    if (!data.name.trim()) {
+      errors.name = 'name is required';
     }
     if (!data.email.trim()) {
       errors.email = 'Email is required';
@@ -51,15 +53,15 @@ function SignUp() {
       <h2 className='text-center text-2xl text-gray-700'>Sign Up</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label className="block text-gray-700 text-sm font-bold mb-2">Username:</label>
+          <label className="block text-gray-700 text-sm font-bold mb-2">name:</label>
           <input
             type="text"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            name="username"
-            value={formData.username}
+            name="name"
+            value={formData.name}
             onChange={handleChange}
           />
-          <div className="text-red-500 text-xs italic">{errors.username && <p className="error">{errors.username}</p>}</div>
+          <div className="text-red-500 text-xs italic">{errors.name && <p className="error">{errors.name}</p>}</div>
         </div>
         <div>
           <label className="block text-gray-700 text-sm font-bold mb-2">Email:</label>
