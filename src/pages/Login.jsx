@@ -15,13 +15,13 @@ function Login() {
     setErrors({ ...errors, [name]: '' });
   };
 
-  const auth = useAuth();
+  const {loginAction} = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateForm(formData);
     if (Object.keys(newErrors).length === 0) {
-      auth.loginAction(formData, setErrors);
+      loginAction(formData, setErrors);
     } else {
       setErrors(newErrors);
     }
