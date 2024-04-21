@@ -117,19 +117,19 @@ const AuthProvider = ({ children }) => {
     }, 1 * 60 * 1000); // Refresh every 5 minutes
 
     return () => clearInterval(interval);
-  }, [token])
+  }, [token]) //everytime a new token is generated
 
 
   const logOut = () => {
     setUser(null);
-    setToken("");
-    localStorage.removeItem("site");
+    setToken(null);
+    // localStorage.removeItem("site");
     navigate("/login");
   };
   
 
   return (
-    <AuthContext.Provider value={{ token, refreshToken, user, loginAction, refreshTokenHandler, logOut }}>
+    <AuthContext.Provider value={{ token, refreshToken, user, setUser, setToken, loginAction, refreshTokenHandler, logOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 function Dashboard() {
   const [name, setName] = useState('');
@@ -28,7 +29,8 @@ function Dashboard() {
   }, [id]); // Re-run effect when id changes
 
   return (
-    <div className='flex bg-gray-400 text-center'>
+    <div className='block '>
+      <Navbar/>
           <div className='text-3xl'>Hi {name} {email}</div>
           <form onSubmit={''}>
             <div>
